@@ -1,0 +1,60 @@
+version: "3.9"
+
+services:
+  app_postgres:
+    container_name: app_postgres
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - 8000:80
+    depends_on:
+      db:
+        condition: service_healthy
+    links:
+      - db
+    environment:
+      - DATABASE_URL=postgres://postgres:example@db:5432/QuizApp
+    command: sh -c "gunicorn main:app --workers 4 --worker-class uvicorn.workers.UvicornWorker --bind 0.0.0.0:80"
+
+  db:
+    image: postgres
+    restart: always
+    volumes:
+      - postgres_vol:/var/lib/postgresql/data
+    environment:
+      POSTGRES_PASSWORD: example
+      POSTGRES_USER: postgres
+      POSTGRES_DB: QuizApp
+    ports:
+      - 5432:5432
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  pgadmin:
+    container_name: pgadmin_container
+    image: dpage/pgadmin4
+    environment:
+      PGADMIN_DEFAULT_EMAIL: "user@user.com"
+      PGADMIN_DEFAULT_PASSWORD: "example"
+      PGADMIN_CONFIG_SERVER_MODE: "False"
+
+    volumes:
+      - pgadmin-vol:/var/lib/pgadmin
+    ports:
+      - "5050:80"
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 1G
+
+volumes:
+  postgres_vol:
+  pgadmin-vol:
+
+

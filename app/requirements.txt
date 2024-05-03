@@ -1,0 +1,8 @@
+fastapi==0.110.0
+FastAPI-SQLAlchemy==0.2.1
+pydantic==2.6.4
+pydantic_core==2.16.3
+SQLAlchemy==2.0.29
+uvicorn==0.29.0
+psycopg2-binary
+gunicorn
